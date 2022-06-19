@@ -1,9 +1,9 @@
+import os
 from game import Game
-from os import system
 from custom_exceptions import ColumnFullException, ColumnNotExistsException
 
 
-class ColourText:
+class _ColourText:
 
     @staticmethod
     def red(string: str) -> str:
@@ -17,6 +17,10 @@ class ColourText:
     def white(string: str) -> str:
         return f'\033[0;37;40m{string}\033[0;0m'
 
+    @staticmethod
+    def green(string: str) -> str:
+        return f'\033[0;32;40m{string}\033[0;0m'
+
 
 class CLIDisplay:
     def __init__(self) -> None:
@@ -24,9 +28,9 @@ class CLIDisplay:
 
     def _get_player_colour(self, game: Game) -> str:
         if game.red_turn:
-            return ColourText.red('Red')
+            return _ColourText.red('Red')
         else:
-            return ColourText.yellow('Yellow')
+            return _ColourText.yellow('Yellow')
 
     def _display_turn(self, game: Game) -> None:
         persons_turn: str = self._get_player_colour(game)
@@ -49,19 +53,25 @@ class CLIDisplay:
             sorted(current_row, key=lambda self: self.column)
             for val in current_row:
                 if val.is_red is None:
-                    return_str += ColourText.white('[ ]')
-                elif val.is_red == True:
-                    return_str += ColourText.white(
-                        '[') + ColourText.red('R') + ColourText.white(']')
+                    return_str += _ColourText.white('[ ]')
+                elif val.is_part_of_four and val.is_red:
+                    return_str += _ColourText.white(
+                        '[') + _ColourText.green('R') + _ColourText.white(']')
+                elif val.is_part_of_four and not val.is_red:
+                    return_str += _ColourText.white(
+                        '[') + _ColourText.green('Y') + _ColourText.white(']')
+                elif val.is_red:
+                    return_str += _ColourText.white(
+                        '[') + _ColourText.red('R') + _ColourText.white(']')
                 else:
-                    return_str += ColourText.white(
-                        '[') + ColourText.yellow('Y') + ColourText.white(']')
+                    return_str += _ColourText.white(
+                        '[') + _ColourText.yellow('Y') + _ColourText.white(']')
 
             return_str += '\n'
 
         print(return_str)
 
-    def user_input_col(self, game: Game) -> None:
+    def _user_input_col(self, game: Game) -> None:
         correct_user_input: bool = False
         result_col: int = 0
         while not correct_user_input:
@@ -81,38 +91,47 @@ class CLIDisplay:
             game.take_turn(result_col)
         except ColumnNotExistsException:
             print(f"Column {result_col} does not exist")
-            self.user_input_col(game)
+            self._user_input_col(game)
         except ColumnFullException:
             print(f"Column {result_col} is full")
-            self.user_input_col(game)
+            self._user_input_col(game)
 
-    def game_over_msg(self, game: Game) -> None:
+    def _game_over_msg(self, game: Game) -> None:
         print(
             f"The game is over, {self._get_player_colour(game)} player wins!!")
 
-    def tie_msg(self, game: Game) -> None:
+        print(f"{_ColourText.green('Green')} shows the winning line")
+
+    def _tie_msg(self, game: Game) -> None:
         print("No spaces left, the game is a tie!")
 
-    def close_game(self) -> None:
+    def _close_game(self) -> None:
         user_close: str = input("Type 'exit' to exit the game: ")
         if user_close == 'exit':
             exit()
         else:
-            self.close_game()
+            self._close_game()
+
+    @staticmethod
+    def clear_console():
+        command: str = 'clear'
+        if os.name in ('nt', 'dos'):  # If Machine is running on Windows, use cls
+            command = 'cls'
+        os.system(command)
 
     def draw(self, game: Game) -> None:
-        system('cls')
+        self.clear_console()
         self._display_turn(game)
         self._display_board_key(game)
         self._display_board(game)
 
         if not game.game_over:
-            self.user_input_col(game)
+            self._user_input_col(game)
             self.draw(game)
 
         elif not game.check_not_tie:
-            self.tie_msg(game)
-            self.close_game()
+            self._tie_msg(game)
+            self._close_game()
         else:
-            self.game_over_msg(game)
-            self.close_game()
+            self._game_over_msg(game)
+            self._close_game()

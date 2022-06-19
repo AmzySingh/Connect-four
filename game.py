@@ -91,12 +91,13 @@ class Game:
     def get_direction_vector(self, current_square: BoardSquare, other_square: BoardSquare) -> Vector:
         return (other_square.column-current_square.column, other_square.row-current_square.row)
 
-    def find_lenght_of_line(self, current_square: BoardSquare, other_square: BoardSquare) -> int:
-        lenght_of_line: int = 2
+    def find_lenght_of_line(self, current_square: BoardSquare, other_square: BoardSquare) -> BS:
         movement_vector: Game.Vector = self.get_direction_vector(
             current_square, other_square)
 
-        while True and lenght_of_line < 4:
+        current_line: Game.BS = [current_square, other_square]
+
+        while len(current_line) < 4:
             other_square_vector: Game.Vector = (
                 other_square.column, other_square.row)
             new_coords: Game.Vector = self.add_coords_to_coords(
@@ -111,11 +112,11 @@ class Game:
 
             if next_piece.is_red == other_square.is_red:
                 other_square = next_piece
-                lenght_of_line += 1
+                current_line.append(other_square)
             else:
                 break
 
-        return lenght_of_line
+        return current_line
 
     @staticmethod
     def add_coords_to_coords(start: Vector, move: Vector) -> Vector:
@@ -123,11 +124,16 @@ class Game:
 
     def check_four_in_a_row(self) -> bool:
         for square in self.board:
+
             if square.is_red is not None:
                 pieces_around: Game.BS = self.pieces_around_piece(square)
                 for next_square in pieces_around:
-                    if self.find_lenght_of_line(square, next_square) >= 4:
+                    current_line: Game.BS = self.find_lenght_of_line(
+                        square, next_square)
+                    if len(current_line) >= 4:
                         self.game_over = True
+                        for square in current_line:
+                            square.is_part_of_four = True
                         return True
 
         return False
