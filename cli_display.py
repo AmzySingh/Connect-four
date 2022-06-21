@@ -1,3 +1,5 @@
+import sys
+import subprocess
 import os
 from game import Game
 from custom_exceptions import ColumnFullException, ColumnNotExistsException
@@ -23,8 +25,8 @@ class _ColourText:
 
 
 class CLIDisplay:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, main_func_path: str) -> None:
+        self.main_func_path = main_func_path
 
     def _get_player_colour(self, game: Game) -> str:
         if game.red_turn:
@@ -75,7 +77,7 @@ class CLIDisplay:
         correct_user_input: bool = False
         result_col: int = 0
         while not correct_user_input:
-            question: str = f"{self._get_player_colour(game)} player, select a column to add a piece into (type 'exit' to exit): "
+            question: str = f"""{self._get_player_colour(game)} player, select a column to add a piece into (type "exit" to exit): """
             result: str = input(question)
             if result == 'exit':
                 exit()
@@ -106,10 +108,18 @@ class CLIDisplay:
         print("No spaces left, the game is a tie!")
 
     def _close_game(self) -> None:
-        user_close: str = input("Type 'exit' to exit the game: ")
+        user_close: str = input("""
+Type "exit" to exit the game
+
+Type "restart" to play again: """)
         if user_close == 'exit':
             exit()
+        elif user_close == 'restart':
+            subprocess.call(
+                [sys.executable, self.main_func_path] + ['True'])
         else:
+
+            self.clear_console()
             self._close_game()
 
     @staticmethod
@@ -135,3 +145,22 @@ class CLIDisplay:
         else:
             self._game_over_msg(game)
             self._close_game()
+
+    def intro_screen(self, skip_intro: bool) -> None:
+        if skip_intro:
+            return
+        intro_msg: str = """Welcome to Amzy's Connect Four Game. 
+
+The rules are simple, 2 colour pieces, select a column to drop a piece, first to make four in a row (horizonal/vertical/diagonal) wins
+
+Type "start" to begin the game or "exit" to quit: """
+
+        user_input: str = input(intro_msg)
+
+        if user_input == 'exit':
+            exit()
+        elif user_input == 'start':
+            pass
+        else:
+            self.clear_console()
+            self.intro_screen(skip_intro)
