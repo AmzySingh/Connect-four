@@ -6,9 +6,9 @@ def main(skip_intro: bool = False):
     game: Game = Game()
     game_display: CLIDisplay = CLIDisplay()
 
-    game_display.intro_screen(skip_intro)
+    game_display.intro_screen(skip_intro, game)
 
-    while True:
+    while game.game_over is False:
         game_display.draw(game)
 
 

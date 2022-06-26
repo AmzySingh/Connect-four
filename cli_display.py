@@ -111,7 +111,7 @@ Type "exit" to exit the game
 
 Type "restart" to play again: """)
         if user_close == 'exit':
-            exit()
+            game.game_over = True
         elif user_close == 'restart':
             game.reset_game()
 
@@ -144,7 +144,7 @@ Type "restart" to play again: """)
             self._game_over_msg(game)
             self._close_game(game)
 
-    def intro_screen(self, skip_intro: bool) -> None:
+    def intro_screen(self, skip_intro: bool, game: Game) -> None:
         if skip_intro:
             return
         self.clear_console()
@@ -157,9 +157,10 @@ Type "start" to begin the game or "exit" to quit: """
         user_input: str = input(intro_msg)
 
         if user_input == 'exit':
-            exit()
+            game.game_over = True
+
         elif user_input == 'start':
             pass
         else:
             self.clear_console()
-            self.intro_screen(skip_intro)
+            self.intro_screen(skip_intro, game)
