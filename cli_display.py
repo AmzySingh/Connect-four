@@ -71,14 +71,15 @@ class CLIDisplay:
 
         print(return_str)
 
-    def _user_input_col(self, game: Game) -> None:
+    def _user_input_col(self, game: Game) -> bool | None:
         correct_user_input: bool = False
         result_col: int = 0
         while not correct_user_input:
             question: str = f"""{self._get_player_colour(game)} player, select a column to add a piece into (type "exit" to exit): """
             result: str = input(question)
             if result == 'exit':
-                exit()
+                game.game_over = True
+                return False
             try:
                 result_col = int(result)
             except ValueError:
@@ -95,6 +96,8 @@ class CLIDisplay:
         except ColumnFullException:
             print(f"Column {result_col} is full")
             self._user_input_col(game)
+
+        return None
 
     def _game_over_msg(self, game: Game) -> None:
         print(
@@ -134,8 +137,8 @@ Type "restart" to play again: """)
         self._display_board(game)
 
         if not game.game_over:
-            self._user_input_col(game)
-            self.draw(game)
+            if self._user_input_col(game) is None:
+                self.draw(game)
 
         elif not game.check_not_tie:
             self._tie_msg(game)
