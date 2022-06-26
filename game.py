@@ -138,6 +138,15 @@ class Game:
 
         return False
 
+    def reset_game(self):
+
+        for piece in self.board:
+            piece.is_red = None
+            piece.is_part_of_four = False
+
+        self.game_over = False
+        self.red_turn = True
+
     @property
     def check_not_tie(self) -> bool:
         for square in self.board:

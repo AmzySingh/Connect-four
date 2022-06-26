@@ -1,5 +1,3 @@
-import sys
-import subprocess
 import os
 from game import Game
 from custom_exceptions import ColumnFullException, ColumnNotExistsException
@@ -25,8 +23,8 @@ class _ColourText:
 
 
 class CLIDisplay:
-    def __init__(self, main_func_path: str) -> None:
-        self.main_func_path = main_func_path
+    def __init__(self) -> None:
+        pass
 
     def _get_player_colour(self, game: Game) -> str:
         if game.red_turn:
@@ -107,7 +105,7 @@ class CLIDisplay:
     def _tie_msg(self, game: Game) -> None:
         print("No spaces left, the game is a tie!")
 
-    def _close_game(self) -> None:
+    def _close_game(self, game: Game) -> None:
         user_close: str = input("""
 Type "exit" to exit the game
 
@@ -115,12 +113,12 @@ Type "restart" to play again: """)
         if user_close == 'exit':
             exit()
         elif user_close == 'restart':
-            subprocess.call(
-                [sys.executable, self.main_func_path] + ['True'])
+            game.reset_game()
+
         else:
 
             self.clear_console()
-            self._close_game()
+            self._close_game(game)
 
     @staticmethod
     def clear_console():
@@ -141,14 +139,15 @@ Type "restart" to play again: """)
 
         elif not game.check_not_tie:
             self._tie_msg(game)
-            self._close_game()
+            self._close_game(game)
         else:
             self._game_over_msg(game)
-            self._close_game()
+            self._close_game(game)
 
     def intro_screen(self, skip_intro: bool) -> None:
         if skip_intro:
             return
+        self.clear_console()
         intro_msg: str = """Welcome to Amzy's Connect Four Game. 
 
 The rules are simple, 2 colour pieces, select a column to drop a piece, first to make four in a row (horizonal/vertical/diagonal) wins
